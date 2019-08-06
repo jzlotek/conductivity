@@ -1,5 +1,5 @@
-public static final int width = 1000;
-public static final int height = 1000;
+public static final int width = 500;
+public static final int height = 500;
 
 class Pixel {
   public int x;
@@ -15,7 +15,16 @@ class Pixel {
     this.k = k;
   }
   public color get_color() {
-    return color((int)this.temp / 3, (int)this.temp / 3, (int)this.temp / 3);
+    float percent = (float)this.temp / 1000.0;
+    if (percent < 0.25) {
+      return lerpColor(color(0, 0, 0), color(200, 0, 0), percent/0.25);
+    } else if (percent < 0.5) {
+      return lerpColor(color(200, 0, 0), color(200, 150, 0), (percent - 0.25) / 0.25);
+    } else if (percent < 0.75) {
+      return lerpColor(color(200, 150, 0), color(200, 200, 0), (percent - 0.5) / 0.25);
+    } else {
+      return lerpColor(color(200, 200, 0), color(0, 255, 255), (percent - 0.75) / 0.25);
+    }
   }
 }
 
@@ -55,9 +64,11 @@ void updateNodes() {
 void setup() {
   for (int x = 0; x < width; x++) {
     for (int y = 0; y < height; y++) {
-      nodes[x][y] = new Pixel(x, y, 0.4, 0);
+      nodes[y][x] = new Pixel(x, y, 0.25, 0);
     }
   }
+  nodes[height/2][width/2].temp = 1000;
+  nodes[height/2][width/2].canChange= false;
   for (int x = 0; x < width; x++) {
     nodes[x][0].temp = 600;
     nodes[x][width-1].temp = 600;
@@ -71,21 +82,18 @@ void setup() {
       nodes[y][x].temp = 600;
     }
   }
-  size(1000, 1000, OPENGL);
+  size(500, 500, OPENGL);
 }
 
 void draw() {
   loadPixels();
 
   for (int i = 0; i < (width*height); i++) {
-    //print(i / height + " " + i % width + "\n");
     color c = nodes[i / height][i % height].get_color();
     pixels[i] = c;
   }
-  pixels[0] = color(255, 0, 0);
-  pixels[width-1] = color(255, 0, 0);
   updatePixels();
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 10; i++) {
     updateNodes();
   }
   print(frameRate + "\n");
