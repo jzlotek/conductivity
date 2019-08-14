@@ -1,5 +1,9 @@
 public static final int width = 500;
 public static final int height = 500;
+// 1st channel 0-255 -> lerp 23c - 1000c
+// 2nd channel 0-255 -> lerp 0k - 1k
+// 3rd channel 0-255 -> if > 100 true, else false
+PImage image;
 
 class Pixel {
   public int x;
@@ -50,37 +54,75 @@ void updateNodes() {
         dx += getChangeTemp(node, nodes[y+1][x]);
       if (y > 0)
         dx += getChangeTemp(node, nodes[y-1][x]);
-      if (x < height - 1)
+      if (x < width - 1)
         dy += getChangeTemp(node, nodes[y][x+1]);
       if (x > 0)
         dy += getChangeTemp(node, nodes[y][x-1]);
 
-      tmp[y][x].temp = (node.temp + dx + dy);
+      double newTemp = (node.temp + dx / 2.0 + dy / 2.0);
+      newTemp = (double)max(0, min((int)newTemp, 1000));
+      if (y < height - 1 && y > 0 && x > 0 && x < width - 1) {
+        int maxTempY = max((int)nodes[y+1][x].temp, (int)nodes[y-1][x].temp);
+        int maxTempX = max((int)nodes[y][x+1].temp, (int)nodes[y][x-1].temp);
+        int maxTemp = max(maxTempY, maxTempX);
+        int minTempY = min((int)nodes[y+1][x].temp, (int)nodes[y-1][x].temp);
+        int minTempX = min((int)nodes[y][x+1].temp, (int)nodes[y][x-1].temp);
+        int minTemp = min(minTempY, minTempX);
+        if (newTemp > maxTemp) {
+          newTemp = maxTemp;
+          newTemp = (maxTemp - minTemp) / 2.0 * node.k;
+        }
+        if (newTemp < minTemp) {
+          newTemp = minTemp;
+          newTemp = (maxTemp - minTemp) / 2.0 * node.k;
+        }
+      }
+
+
+      tmp[y][x].temp = newTemp;
     }
   }
   nodes = tmp;
 }
 
 void setup() {
+  image = loadImage("test2_2.png");
+  print(image.width);
+  print(image.height);
+
   for (int x = 0; x < width; x++) {
     for (int y = 0; y < height; y++) {
-      nodes[y][x] = new Pixel(x, y, 0.25, 0);
+      nodes[y][x] = new Pixel(x, y, 0, 0);
     }
   }
-  nodes[height/2][width/2].temp = 1000;
-  nodes[height/2][width/2].canChange= false;
-  for (int x = 0; x < width; x++) {
-    nodes[x][0].temp = 600;
-    nodes[x][width-1].temp = 600;
-  }
-  for (int y = 0; y < height; y++) {
-    nodes[0][y].temp = 600;
-    nodes[height-1][y].temp = 600;
-  }
-  for (int y = 1; y < height/2; y++) {
-    for (int x = 1; x < width; x++) {
-      nodes[y][x].temp = 600;
+
+  image.loadPixels();
+  for (int x = 0; x < height; x++) {
+    for (int y = 0; y < width; y++) {
+      color c = image.pixels[x * height + y];
+      nodes[x][y].temp = lerp(0, 1000.0, (float)red(c) / 255.0);
+      nodes[x][y].k = lerp(0.0, 1, (float)green(c) / 255.0);
+      boolean canChange = false;
+      //print(blue(c) + "\n");
+      if (blue(c) > 100) {
+        canChange = true;
+      }
+      nodes[x][y].canChange = canChange;
+      //print(red(c) + " " + green(c) + " " + blue(c) + "\n");
     }
+  }
+
+  for (int r = 0; r < height; r++) {
+    nodes[r][0].canChange = false;
+    nodes[r][0].temp = 0;
+    nodes[r][width-1].canChange = false;
+    nodes[r][width-1].temp = 0;
+  }
+  for (int c = 0; c < height; c++) {
+    nodes[0][c].canChange = false;
+    nodes[0][c].temp = 0;
+    nodes[height-1][c].canChange = false;
+    nodes[height-1][c].temp = 0;
   }
   size(500, 500, OPENGL);
 }
@@ -93,8 +135,7 @@ void draw() {
     pixels[i] = c;
   }
   updatePixels();
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 1000; i++) {
     updateNodes();
   }
-  print(frameRate + "\n");
 }
