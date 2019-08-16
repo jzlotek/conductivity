@@ -30,9 +30,15 @@ class Pixel {
       return lerpColor(color(200, 200, 0), color(0, 255, 255), (percent - 0.75) / 0.25);
     }
   }
+  public String toString() {
+    return "(" + this.x + ", " + this.y + ") \ttemp: " + this.temp +" canChange: " + this.canChange +"\tk: " + this.k;
+  }
 }
 
 Pixel[][] nodes = new Pixel[height][width];
+Pixel[][] initial = new Pixel[height][width]; 
+
+boolean spaceBarIsPressed = false;
 
 double getChangeTemp(Pixel n1, Pixel n2) {
   return -n1.k * (n1.temp - n2.temp);
@@ -46,10 +52,12 @@ void updateNodes() {
       if (!nodes[y][x].canChange) {
         continue;
       }
-      double dx = 0;
+      double dx = 0;  
       double dy = 0;
 
       Pixel node = nodes[y][x];
+      
+      //if not a border pixel, get change temp
       if (y < height - 1)
         dx += getChangeTemp(node, nodes[y+1][x]);
       if (y > 0)
@@ -58,7 +66,7 @@ void updateNodes() {
         dy += getChangeTemp(node, nodes[y][x+1]);
       if (x > 0)
         dy += getChangeTemp(node, nodes[y][x-1]);
-
+  
       double newTemp = (node.temp + dx / 2.0 + dy / 2.0);
       newTemp = (double)max(0, min((int)newTemp, 1000));
       if (y < height - 1 && y > 0 && x > 0 && x < width - 1) {
@@ -86,7 +94,7 @@ void updateNodes() {
 }
 
 void setup() {
-  image = loadImage("test2_2.png");
+  image = loadImage("test3.png");
   print(image.width);
   print(image.height);
 
@@ -111,7 +119,8 @@ void setup() {
       //print(red(c) + " " + green(c) + " " + blue(c) + "\n");
     }
   }
-
+  
+  //border setup
   for (int r = 0; r < height; r++) {
     nodes[r][0].canChange = false;
     nodes[r][0].temp = 0;
@@ -123,19 +132,42 @@ void setup() {
     nodes[0][c].temp = 0;
     nodes[height-1][c].canChange = false;
     nodes[height-1][c].temp = 0;
-  }
+  } 
+  initial = nodes.clone();
   size(500, 500, OPENGL);
+}
+
+void keyPressed() {
+  if (key == ' ') {
+    spaceBarIsPressed = true;
+  } else {
+    spaceBarIsPressed = false;
+  }
+} 
+
+void mouseClicked() {
+  println(nodes[mouseY][mouseX]);
 }
 
 void draw() {
   loadPixels();
 
-  for (int i = 0; i < (width*height); i++) {
-    color c = nodes[i / height][i % height].get_color();
-    pixels[i] = c;
+  if (spaceBarIsPressed) {
+    
+    for (int i = 0; i < (width*height); i++) {
+      color c = initial[i / height][i % height].get_color();
+      pixels[i] = c; 
+    }
+  } else {
+    for (int i = 0; i < (width*height); i++) {
+      color c = nodes[i / height][i % height].get_color();
+      pixels[i] = c;
+    }
   }
   updatePixels();
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < 10; i++) {
     updateNodes();
   }
 }
+
+
