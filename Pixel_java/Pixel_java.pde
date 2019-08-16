@@ -3,6 +3,9 @@ public static final int height = 500;
 // 1st channel 0-255 -> lerp 23c - 1000c
 // 2nd channel 0-255 -> lerp 0k - 1k
 // 3rd channel 0-255 -> if > 100 true, else false
+
+
+//k for BEEF .67  
 PImage image;
 
 class Pixel {
@@ -94,7 +97,7 @@ void updateNodes() {
 }
 
 void setup() {
-  image = loadImage("test3.png");
+  image = loadImage("conduction.png");
   print(image.width);
   print(image.height);
 
@@ -139,9 +142,7 @@ void setup() {
 
 void keyPressed() {
   if (key == ' ') {
-    spaceBarIsPressed = true;
-  } else {
-    spaceBarIsPressed = false;
+    nodes = initial.clone();
   }
 } 
 
@@ -152,17 +153,9 @@ void mouseClicked() {
 void draw() {
   loadPixels();
 
-  if (spaceBarIsPressed) {
-    
-    for (int i = 0; i < (width*height); i++) {
-      color c = initial[i / height][i % height].get_color();
-      pixels[i] = c; 
-    }
-  } else {
-    for (int i = 0; i < (width*height); i++) {
-      color c = nodes[i / height][i % height].get_color();
-      pixels[i] = c;
-    }
+  for (int i = 0; i < (width*height); i++) {
+    color c = nodes[i / height][i % height].get_color();
+    pixels[i] = c;
   }
   updatePixels();
   for (int i = 0; i < 10; i++) {
