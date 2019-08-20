@@ -100,6 +100,8 @@ void setup() {
   image = loadImage("conduction.png");
   print(image.width);
   print(image.height);
+  
+  
 
   for (int x = 0; x < width; x++) {
     for (int y = 0; y < height; y++) {
@@ -158,7 +160,7 @@ void draw() {
     pixels[i] = c;
   }
   updatePixels();
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 1; i++) {
     updateNodes();
   }
 }
