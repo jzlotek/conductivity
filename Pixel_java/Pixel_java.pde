@@ -37,7 +37,7 @@ class Pixel {
     return "(" + this.x + ", " + this.y + ") \ttemp: " + this.temp +" canChange: " + this.canChange +"\tk: " + this.k;
   }
 }
-
+ 
 Pixel[][] nodes = new Pixel[height][width];
 Pixel[][] initial = new Pixel[height][width]; 
 
